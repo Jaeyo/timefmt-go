@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/itchyny/timefmt-go"
+	"github.com/Jaeyo/timefmt-go"
 )
 
 var formatTestCases = []struct {

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/itchyny/timefmt-go"
+	"github.com/Jaeyo/timefmt-go"
 )
 
 var parseTestCases = []struct {
@@ -1170,7 +1170,7 @@ var parseTestCases = []struct {
 func TestParse(t *testing.T) {
 	for _, tc := range parseTestCases {
 		t.Run(tc.source+"/"+tc.format, func(t *testing.T) {
-			got, err := timefmt.Parse(tc.source, tc.format)
+			got, _, err := timefmt.ParseAndGetRest(tc.source, tc.format)
 			if tc.parseErr == nil {
 				if err != nil {
 					t.Fatalf("expected no error but got: %v", err)
@@ -1199,19 +1199,21 @@ func TestParse(t *testing.T) {
 }
 
 func ExampleParse() {
-	str := "2020-07-24 09:07:29"
-	t, err := timefmt.Parse(str, "%Y-%m-%d %H:%M:%S")
+	str := "2020-07-24 09:07:29 and the rest"
+	t, rest, err := timefmt.ParseAndGetRest(str, "%Y-%m-%d %H:%M:%S")
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(t)
+	fmt.Println(rest)
 	// Output: 2020-07-24 09:07:29 +0000 UTC
+	//  and the rest
 }
 
 func ExampleParseInLocation() {
 	loc := time.FixedZone("JST", 9*60*60)
 	str := "2020-07-24 09:07:29"
-	t, err := timefmt.ParseInLocation(str, "%Y-%m-%d %H:%M:%S", loc)
+	t, _, err := timefmt.ParseAndGetRestInLocation(str, "%Y-%m-%d %H:%M:%S", loc)
 	if err != nil {
 		log.Fatal(err)
 	}

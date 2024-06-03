@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-// Parse time string using the format.
-func Parse(source, format string) (t time.Time, err error) {
-	return parse(source, format, time.UTC, time.Local)
+// ParseAndGetRest time string using the format.
+func ParseAndGetRest(source, format string) (t time.Time, rest string, err error) {
+	return parseAndGetRest(source, format, time.UTC, time.Local)
 }
 
-// ParseInLocation parses time string with the default location.
+// ParseAndGetInLocation parses time string with the default location.
 // The location is also used to parse the time zone name (%Z).
-func ParseInLocation(source, format string, loc *time.Location) (t time.Time, err error) {
-	return parse(source, format, loc, loc)
+func ParseAndGetRestInLocation(source, format string, loc *time.Location) (t time.Time, rest string, err error) {
+	return parseAndGetRest(source, format, loc, loc)
 }
 
-func parse(source, format string, loc, base *time.Location) (t time.Time, err error) {
+func parseAndGetRest(source, format string, loc, base *time.Location) (t time.Time, rest string, err error) {
 	year, month, day, hour, min, sec, nsec := 1900, 1, 0, 0, 0, 0, 0
 	defer func() {
 		if err != nil {
@@ -335,8 +335,7 @@ func parse(source, format string, loc, base *time.Location) (t time.Time, err er
 		}
 	}
 	if j < len(source) {
-		err = fmt.Errorf("unparsed string %q", source[j:])
-		return
+		return time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc), source[j:], nil
 	}
 	if pm {
 		hour += 12
@@ -350,7 +349,7 @@ func parse(source, format string, loc, base *time.Location) (t time.Time, err er
 				err = errors.New(`use "%Y" to parse non-ISO year for "%j"`)
 				return
 			}
-			return time.Date(year, time.January, yday, hour, min, sec, nsec, loc), nil
+			return time.Date(year, time.January, yday, hour, min, sec, nsec, loc), "", nil
 		}
 		if weekstart >= time.Sunday {
 			if weekstart == time.Thursday {
@@ -366,11 +365,11 @@ func parse(source, format string, loc, base *time.Location) (t time.Time, err er
 				week++
 			}
 			t := time.Date(year, time.January, -int(weekstart), hour, min, sec, nsec, loc)
-			return t.AddDate(0, 0, week*7-int(t.Weekday())+weekday-1), nil
+			return t.AddDate(0, 0, week*7-int(t.Weekday())+weekday-1), "", nil
 		}
 		day = 1
 	}
-	return time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc), nil
+	return time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc), "", nil
 }
 
 func locationZone(loc *time.Location) (name string, offset int) {
